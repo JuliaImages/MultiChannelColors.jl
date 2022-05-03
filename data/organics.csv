@@ -1,0 +1,65 @@
+# Dye,Ex (nm),Em (nm),MW,Notes
+Hydroxycoumarin,325,386,331,Succinimidyl ester
+Aminocoumarin,350,445,330,Succinimidyl ester
+Methoxycoumarin,360,410,317,Succinimidyl ester
+# Cascade Blue,(375);401,423,596,Hydrazide
+Pacific Blue,403,455,406,Maleimide
+Pacific Orange,403,551,,
+3-Hydroxyisonicotinaldehyde,385,525,123,QY 0.15; pH sensitive
+Lucifer yellow,425,528,,
+NBD,466,539,294,NBD-X
+# R-Phycoerythrin (PE),480;565,578,240 k,
+# PE-Cy5 conjugates,480;565;650,670,,"aka Cychrome, R670, Tri-Color, Quantum Red"
+# PE-Cy7 conjugates,480;565;743,767,,
+# Red 613,480;565,613,,PE-Texas Red
+PerCP,490,675,35kDa,Peridinin chlorophyll protein
+# TruRed,"490,675",695,,PerCP-Cy5.5 conjugate
+FluorX,494,520,587,(GE Healthcare)
+Fluorescein,495,519,389,FITC; pH sensitive
+BODIPY-FL,503,512,,
+G-Dye100,498,524,,suitable for protein labeling and electrophoresis
+G-Dye200,554,575,,suitable for protein labeling and electrophoresis
+G-Dye300,648,663,,suitable for protein labeling and electrophoresis
+G-Dye400,736,760,,suitable for protein labeling and electrophoresis
+Cy2,489,506,714,QY 0.12
+# Cy3,(512);550,570;(615),767,QY 0.15
+# Cy3B,558,572;(620),658,QY 0.67
+# Cy3.5,581,594;(640),1102,QY 0.15
+# Cy5,(625);650,670,792,QY 0.28
+Cy5.5,675,694,1272,QY 0.23
+Cy7,743,767,818,QY 0.28
+TRITC,547,572,444,TRITC
+X-Rhodamine,570,576,548,XRITC
+Lissamine Rhodamine B,570,590,,
+Texas Red,589,615,625,Sulfonyl chloride
+Allophycocyanin (APC),650,660,104 k,
+# APC-Cy7 conjugates,650;755,767,,Far Red
+Hoechst 33342,343,483,616,AT-selective
+DAPI,345,455,,AT-selective
+Hoechst 33258,345,478,624,AT-selective
+SYTOX Blue,431,480,~400,DNA
+Chromomycin A3,445,575,,CG-selective
+Mithramycin,445,575,,
+YOYO-1,491,509,1271,
+Ethidium Bromide,210;285,605,394,in aqueous solution
+GelRed,290;520,595,1239,Non-toxic substitute for Ethidium Bromide
+# Acridine Orange,503,530/640,,DNA/RNA
+SYTOX Green,504,523,~600,DNA
+TOTO-1, 509,533,,"Vital stain, TOTO: Cyanine Dimer"
+TO-PRO-1,509,533,,"Vital stain, TOTO: Cyanine Dimer"
+Thiazole Orange,510,530,,
+CyTRAK Orange,520,615,-,(Biostatus) (red excitation dark)
+Propidium Iodide (PI),536,617,668.4,
+# LDS 751,543;590,712;607,472,"DNA (543ex/712em), RNA (590ex/607em)"
+7-AAD,546,647,,"7-aminoactinomycin D, CG-selective"
+SYTOX Orange,547,570,~500,DNA
+TOTO-3,642,661,,
+TO-PRO-3,642,661,,
+# DRAQ5,600/647,697,413,(Biostatus) (usable excitation down to 488)
+# DRAQ7,599/644,694,~700,(Biostatus) (usable excitation down to 488)
+# Indo-1,361/330,490/405,1010,"AM ester, low/high calcium (Ca2+)"
+Fluo-3,506,526,855,AM ester. pH > 6
+# Fluo-4,491/494,516,1097,AM ester. pH 7.2
+DCFH,505,535,529,"2'7'Dichorodihydrofluorescein, oxidized form"
+DHR,505,534,346,"Dihydrorhodamine 123, oxidized form, light catalyzes oxidation"
+# SNARF,548/579,587/635,,pH 6/9

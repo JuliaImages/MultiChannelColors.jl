@@ -1,0 +1,65 @@
+# Dye,Ex (nm),Em (nm),MW,QY,BR,PS,Notes
+GFP (Y66H mutation),360,442,,,,,
+GFP (Y66F mutation),360,508,,,,,
+EBFP,380,440,,0.18,0.27,,monomer
+EBFP2,383,448,,,20,,monomer
+Azurite,383,447,,,15,,monomer
+GFPuv,385,508,,,,,
+T-Sapphire,399,511,,0.60,26,25,weak dimer
+Cerulean,433,475,,0.62,27,36,weak dimer
+mCFP,433,475,,0.40,13,64,monomer
+mTurquoise2,434,474,,0.93,28,,monomer
+ECFP,434,477,,0.15,3,,
+CyPet,435,477,,0.51,18,59,weak dimer
+GFP (Y66W mutation),436,485,,,,,
+mKeima-Red,440,620,,0.24,3,,monomer (MBL)
+TagCFP,458,480,,,29,,dimer (Evrogen)
+AmCyan1,458,489,,0.75,29,,"tetramer, (Clontech)"
+mTFP1,462,492,,,54,,dimer
+GFP (S65A mutation),471,504,,,,,
+Midoriishi Cyan,472,495,,0.9,25,,dimer (MBL)
+# Wild Type GFP,"396,475",508,26k,0.77,,,
+GFP (S65C mutation),479,507,,,,,
+TurboGFP,482,502,26 k,0.53,37,,"dimer, (Evrogen)"
+TagGFP,482,505,,,34,,monomer (Evrogen)
+GFP (S65L mutation),484,510,,,,,
+Emerald,487,509,,0.68,39,0.69,"weak dimer, (Invitrogen)"
+GFP (S65T mutation),488,511,,,,,
+EGFP,488,507,26k,0.60,34,174,"weak dimer, (Clontech)"
+Azami Green,492,505,,0.74,41,,monomer (MBL)
+ZsGreen1,493,505,105k,0.91,40,,"tetramer, (Clontech)"
+TagYFP,508,524,,,47,,monomer (Evrogen)
+EYFP,514,527,26k,0.61,51,60,"weak dimer, (Clontech)"
+Topaz,514,527,,,57,,monomer
+Venus,515,528,,0.57,53,15,weak dimer
+mCitrine,516,529,,0.76,59,49,monomer
+YPet,517,530,,0.77,80,49,weak dimer
+TurboYFP,525,538,26 k,0.53,55.7,,"dimer, (Evrogen)"
+ZsYellow1,529,539,,0.65,13,,"tetramer, (Clontech)"
+Kusabira Orange,548,559,,0.60,31,,monomer (MBL)
+mOrange,548,562,,0.69,49,9,monomer
+Allophycocyanin (APC),652,657.5,105 kDa,0.68,,,"heterodimer, crosslinked[13]"
+mKO,548,559,,0.60,31,122,monomer
+TurboRFP,553,574,26 k,0.67,62,,"dimer, (Evrogen)"
+tdTomato,554,581,,0.69,95,98,tandem dimer
+TagRFP,555,584,,,50,,monomer (Evrogen)
+DsRed monomer,556,586,~28k,0.1,3.5,16,"monomer, (Clontech)"
+DsRed2,563,582,~110k,0.55,24,,(Clontech)
+RFP,563,582,~110k,0.55,24,,(Clontech)
+mStrawberry,574,596,,0.29,26,15,monomer
+TurboFP602,574,602,26 k,0.35,26,,"dimer, (Evrogen)"
+AsRed2,576,592,~110k,0.21,13,,"tetramer, (Clontech)"
+mRFP1,584,607,~30k,0.25,,,"monomer, (Tsien lab)"
+J-Red,584,610,,0.20,8.8,13,dimer
+R-phycoerythrin (RPE),565 >498,573,250 kDa,0.84,,,heterotrimer[13]
+B-phycoerythrin (BPE),545,572,240 kDa,0.98,,,heterotrimer[13]
+mCherry,587,610,,0.22,16,96,monomer
+HcRed1,588,618,~52k,0.03,0.6,,"dimer, (Clontech)"
+Katusha,588,635,,,23,,dimer
+P3,614,662,"~10,000 kDa",,,,phycobilisome complex[13]
+Peridinin Chlorophyll (PerCP),483,676,35 kDa,,,,trimer[13]
+mKate (TagFP635),588,635,,,15,,monomer (Evrogen)
+TurboFP635,588,635,26 k,0.34,22,,"dimer, (Evrogen)"
+mPlum,590,649,51.4 k,0.10,4.1,53,
+mRaspberry,598,625,,0.15,13,,"monomer, faster photobleach than mPlum"
+mScarlet,569,594,,0.70,71,277,monomer[14]
