@@ -50,15 +50,15 @@ and you must preserve the `N0f8` element type of fluorophore_rgb"NAME".
 struct ColorMixture{T,N,Cs} <: Color{T,N}
     channels::NTuple{N,T}
 
-    Compat.@constprop :aggressive function ColorMixture{T,N,Cs}(channels::NTuple{N}) where {T,N,Cs}
+    Base.@constprop :aggressive function ColorMixture{T,N,Cs}(channels::NTuple{N}) where {T,N,Cs}
         Cs isa NTuple{N,RGB{T}} || throw(TypeError(:ColorMixture, "incompatible color types", NTuple{N,RGB{T}}, typeof(Cs)))
         return new{T,N,Cs}(channels)
     end
 end
 ColorMixture{T,N,Cs}(channels::Vararg{Real,N}) where {T,N,Cs} = ColorMixture{T,N,Cs}(channels)
-Compat.@constprop :aggressive ColorMixture{T}(Cs::NTuple{N,RGB{T}}, channels::NTuple{N,Real}) where {T,N} = ColorMixture{T,N,Cs}(channels)
-ColorMixture{T}(Cs::NTuple{N,AbstractRGB}, channels::NTuple{N,Real}) where {T,N} = ColorMixture{T,N,RGB{T}.(Cs)}(channels)
-ColorMixture{T}(Cs::NTuple{N,AbstractRGB}, channels::Vararg{Real,N}) where {T,N} = ColorMixture{T}(Cs, channels)
+Base.@constprop :aggressive ColorMixture{T}(Cs::NTuple{N,RGB{T}}, channels::NTuple{N,Real}) where {T,N} = ColorMixture{T,N,Cs}(channels)
+Base.@constprop :aggressive ColorMixture{T}(Cs::NTuple{N,AbstractRGB}, channels::NTuple{N,Real}) where {T,N} = ColorMixture{T,N,RGB{T}.(Cs)}(channels)
+Base.@constprop :aggressive ColorMixture{T}(Cs::NTuple{N,AbstractRGB}, channels::Vararg{Real,N}) where {T,N} = ColorMixture{T}(Cs, channels)
 
 @inline _promote_typeof(::Type{C1}, ::Type{C2}) where {C1,C2} = promote_type(C1, C2)
 @inline _promote_typeof(::Type{C1}, ::Type{C2}, obj, objs...) where {C1,C2} =
@@ -69,8 +69,8 @@ ColorMixture{T}(Cs::NTuple{N,AbstractRGB}, channels::Vararg{Real,N}) where {T,N}
 @inline promote_typeof(obj1, obj2, objs...) = _promote_type(typeof(obj1), typeof(obj2), objs...)
 
 computeT(Cs::NTuple{N,AbstractRGB}, channels::NTuple{N,Real}) where {N} = eltype(promote_typeof(map(*, Cs, channels)...))
-ColorMixture(Cs::NTuple{N,AbstractRGB}, channels::NTuple{N,Real}) where {N} = ColorMixture{computeT(Cs, channels)}(Cs, channels)
-ColorMixture(Cs::NTuple{N,AbstractRGB}, channels::Vararg{Real,N}) where {N} = ColorMixture{computeT(Cs, channels)}(Cs, channels)
+Base.@constprop :aggressive ColorMixture(Cs::NTuple{N,AbstractRGB}, channels::NTuple{N,Real}) where {N} = ColorMixture{computeT(Cs, channels)}(Cs, channels)
+Base.@constprop :aggressive ColorMixture(Cs::NTuple{N,AbstractRGB}, channels::Vararg{Real,N}) where {N} = ColorMixture{computeT(Cs, channels)}(Cs, channels)
 
 """
     cobj = ColorMixture((rgb₁, rgb₂))        # create an all-zeros ColorMixture
@@ -103,7 +103,17 @@ function Base.show(io::IO, c::ColorMixture)
     print(io, ')')
 end
 
+# These definitions use floats to avoid overflow
 function Base.convert(::Type{RGB{T}}, c::ColorMixture{T,N,Cs}) where {T,N,Cs}
-    sum(map(*, c.channels, Cs))
+    convert(RGB{T}, sum(map(*, c.channels, Cs); init=zero(RGB{float(T)})))
 end
-Base.convert(::Type{RGB}, c::ColorMixture{T}) where T = convert(RGB{T}, c)
+function Base.convert(::Type{RGB{T}}, c::ColorMixture{R,N,Cs}) where {T,R,N,Cs}
+    convert(RGB{T}, sum(map((w, rgb) -> convert(RGB{float(T)}, w*rgb), c.channels, Cs)))
+end
+Base.convert(::Type{RGB}, c::ColorMixture{T}) where T = convert(RGB{floattype(T)}, c)
+Base.convert(::Type{RGB24}, c::ColorMixture) = convert(RGB24, convert(RGB, c))
+
+ColorTypes._comp(::Val{N}, c::ColorMixture) where N = c.channels[N]
+Base.@constprop :aggressive ColorTypes.mapc(f, c::ColorMixture{T,N,Cs}) where {T,N,Cs} = ColorMixture(Cs, map(f, c.channels))
+Base.@constprop :aggressive ColorTypes.mapreducec(f, op, v0, c::ColorMixture{T,N,Cs}) where {T,N,Cs} = mapreduce(f, op, v0, c.channels)
+Base.@constprop :aggressive ColorTypes.reducec(op, v0, c::ColorMixture{T,N,Cs}) where {T,N,Cs} = reduce(op, c.channels; init=v0)

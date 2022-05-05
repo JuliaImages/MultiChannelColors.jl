@@ -49,3 +49,11 @@ f(i1, i2) = ColorMixture{N0f8}((fluorophore_rgb"EGFP", fluorophore_rgb"tdTomato"
 Note the absence of `[]` brackets around the fluorophore names. For such constructors, `N0f8` is the only option if you're
 looking up the RGB values with `fluorophore_rgb`; however, if you hard-code the RGB values there is no restriction
 on the element type.
+
+## Why are the RGB colors encoded in the *type*? Why not a value field?
+
+In many places, JuliaImages assumes that you can convert from one color space to another purely from knowing the type you want to convert to. This would not be possible if the RGB colors were encoded as a second field of the color.
+
+## Why does this package require a minimum of Julia 1.7?
+
+To achieve good performance, the RGB values must be aggressively constant-propagated, a feature available only on Julia 1.7 and higher.
