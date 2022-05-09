@@ -4,8 +4,6 @@
 # Making the main representation by RGB means we can do the latter efficiently without requiring
 # world-age violations.
 
-const subscript = ('₁', '₂', '₃', '₄', '₅', '₆', '₇', '₈', '₉')
-
 """
     ColorMixture((rgb₁, rgb₂), (i₁, i₂))          # store intensities
     ColorMixture{T}((rgb₁, rgb₂), (i₁, i₂))       # same, but coerce to element type T for colors and intensities
@@ -99,7 +97,8 @@ function Base.show(io::IO, c::ColorMixture)
     print(io, '(')
     for (j, intensity) in enumerate(c.channels)
         j > 1 && print(io, ", ")
-        print(io, intensity, subscript[j])
+        print(io, intensity)
+        print_subscript(io, length(c), j)
     end
     print(io, ')')
 end
