@@ -34,8 +34,13 @@ using ImageCore
         # Overflow behavior
         ctemplate = ColorMixture{N0f8}((RGB(1, 0, 0), RGB(0.5, 0.5, 0)))
         c = ctemplate(0.8, 0.8)
-        @test_throws "the values (1.2f0, 0.4f0, 0.0f0) do not lie within this range" convert(RGB{N0f8}, c)
-        @test_throws "the values (1.2f0, 0.4f0, 0.0f0) do not lie within this range" convert(RGB24, c)
+        if Base.VERSION >= v"1.8.0-DEV.363"
+            @test_throws "the values (1.2f0, 0.4f0, 0.0f0) do not lie within this range" convert(RGB{N0f8}, c)
+            @test_throws "the values (1.2f0, 0.4f0, 0.0f0) do not lie within this range" convert(RGB24, c)
+        else
+            @test_throws ArgumentError convert(RGB{N0f8}, c)
+            @test_throws ArgumentError convert(RGB24, c)
+        end
         @test convert(RGB, c) === RGB{Float32}(1.2, 0.4, 0)
 
         # Macro syntax & inferrability
