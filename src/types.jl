@@ -105,10 +105,10 @@ end
 
 # These definitions use floats to avoid overflow
 function Base.convert(::Type{RGB{T}}, c::ColorMixture{T,N,Cs}) where {T,N,Cs}
-    convert(RGB{T}, sum(map(*, c.channels, Cs); init=zero(RGB{float(T)})))
+    convert(RGB{T}, sum(map(*, c.channels, Cs); init=zero(RGB{floattype(T)})))
 end
 function Base.convert(::Type{RGB{T}}, c::ColorMixture{R,N,Cs}) where {T,R,N,Cs}
-    convert(RGB{T}, sum(map((w, rgb) -> convert(RGB{float(T)}, w*rgb), c.channels, Cs)))
+    convert(RGB{T}, sum(map((w, rgb) -> convert(RGB{floattype(T)}, w*rgb), c.channels, Cs)))
 end
 Base.convert(::Type{RGB}, c::ColorMixture{T}) where T = convert(RGB{T}, c)
 Base.convert(::Type{RGB24}, c::ColorMixture) = convert(RGB24, convert(RGB, c))
