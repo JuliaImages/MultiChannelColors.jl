@@ -66,7 +66,11 @@ using ImageCore
         channels = (fluorophore_rgb["EGFP"], fluorophore_rgb["tdTomato"])
         ctemplate = ColorMixture{N0f8}(channels)
         c = ctemplate(0.4, 0.2)
-        @test @inferred(mapc(x->2x, c)) === ColorMixture{Float32}(channels, (0.8, 0.4))
+        if Base.VERSION >= v"1.7"
+            @test @inferred(mapc(x->2x, c)) === ColorMixture{Float32}(channels, (0.8, 0.4))
+        else
+            @test_broken @inferred(mapc(x->2x, c)) === ColorMixture{Float32}(channels, (0.8, 0.4))
+        end
         @test @inferred(mapreducec(x->2x, +, c)) === 1.2f0
         @test @inferred(reducec(+, c)) === reduce(+, (0.4N0f8, 0.2N0f8))
     end
