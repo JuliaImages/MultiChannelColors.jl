@@ -35,6 +35,30 @@ RGB{N0f16}(0.75,0.87549,0.09117)
 
 The latter is how this color would be rendered in a viewer; embedded in a function, the conversion is extremely well optimized (~2.2ns on the author's machine).
 
+## Overflow protection
+
+Depending on the colors you pick for conversion to RGB (e.g., `channels`), it is possible to exceed the 0-to-1 bounds of RGB.
+With the choice above,
+
+```julia
+julia> c = ctemplate(0.99, 0.99)
+(0.99001N0f16₁, 0.99001N0f16₂)
+
+julia> convert(RGB, c)
+ERROR: ArgumentError: component type N0f16 is a 16-bit type representing 65536 values from 0.0 to 1.0,
+  but the values (0.9900053f0, 1.7664759f0, 0.36105898f0) do not lie within this range.
+  See the READMEs for FixedPointNumbers and ColorTypes for more information.
+Stacktrace:
+[...]
+```
+
+If you want to guard against such errors, one good choice would be
+
+```julia
+julia> convert(RGB{Float32}, c)
+RGB{Float32}(0.9900053, 1.7664759, 0.36105898)
+```
+
 ## Advanced usage
 
 `ctemplate` stores the RGB *values* for each fluorophore as a type-parameter. This allows efficient conversion to RGB
