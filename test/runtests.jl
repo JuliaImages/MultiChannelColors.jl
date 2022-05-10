@@ -37,11 +37,13 @@ using ImageCore
         if Base.VERSION >= v"1.8.0-DEV.363"
             @test_throws "the values (1.2f0, 0.4f0, 0.0f0) do not lie within this range" convert(RGB{N0f8}, c)
             @test_throws "the values (1.2f0, 0.4f0, 0.0f0) do not lie within this range" convert(RGB24, c)
+            @test_throws "the values (1.2f0, 0.4f0, 0.0f0) do not lie within this range" convert(RGB, c)
         else
             @test_throws ArgumentError convert(RGB{N0f8}, c)
             @test_throws ArgumentError convert(RGB24, c)
+            @test_throws ArgumentError convert(RGB, c)
         end
-        @test convert(RGB, c) === RGB{Float32}(1.2, 0.4, 0)
+        @test convert(RGB{Float32}, c) === RGB{Float32}(1.2, 0.4, 0)
 
         # Macro syntax & inferrability
         f_infer(i1, i2) = ColorMixture{N0f8}((fluorophore_rgb"EGFP", fluorophore_rgb"tdTomato"), (i1, i2))
@@ -98,9 +100,9 @@ using ImageCore
         # Integration with the rest of the JuliaImages ecosystem
         ctemplate = ColorMixture{N0f8}((RGB(1, 0, 0), RGB(0.5, 0.5, 0)))
         c = ctemplate(0.8, 0.8)
-        @test convert(RGB, c) === RGB{Float32}(1.2, 0.4, 0)
-        @test clamp01(c)      === RGB{Float32}(1, 0.4, 0)
-        @test clamp01nan(c)   === RGB{Float32}(1, 0.4, 0)
+        @test convert(RGB{Float32}, c) === RGB{Float32}(1.2, 0.4, 0)
+        @test clamp01(c)    === RGB{N0f8}(1, 0.4, 0)
+        @test clamp01nan(c) === RGB{N0f8}(1, 0.4, 0)
         ctemplate = ColorMixture((RGB{Float32}(1, 0, NaN), RGB{Float32}(0.5, 0.5, NaN)))
         c = ctemplate(0.8, 0.8)
         @test isequal(convert(RGB, c), RGB{Float32}(1.2,0.4,NaN))

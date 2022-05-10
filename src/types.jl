@@ -32,7 +32,7 @@ julia> c = ColorMixture{N0f16}(channelcolors, #= GFP intensity =# 0.2, #= tdToma
 (0.2N0f16₁, 0.85N0f16₂)
 
 julia> convert(RGB, c)
-RGB{N0f16}(0.85,0.9151,0.07294)
+RGB{N0f16}(0.85, 0.9151, 0.07294)
 ```
 
 If you must construct colors inferrably inside a function body, use
@@ -110,7 +110,7 @@ end
 function Base.convert(::Type{RGB{T}}, c::ColorMixture{R,N,Cs}) where {T,R,N,Cs}
     convert(RGB{T}, sum(map((w, rgb) -> convert(RGB{float(T)}, w*rgb), c.channels, Cs)))
 end
-Base.convert(::Type{RGB}, c::ColorMixture{T}) where T = convert(RGB{floattype(T)}, c)
+Base.convert(::Type{RGB}, c::ColorMixture{T}) where T = convert(RGB{T}, c)
 Base.convert(::Type{RGB24}, c::ColorMixture) = convert(RGB24, convert(RGB, c))
 
 ColorTypes._comp(::Val{N}, c::ColorMixture) where N = c.channels[N]
