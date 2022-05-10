@@ -92,5 +92,5 @@ julia> C2 = typeof(ColorMixture(float.(channels)))
 ColorMixture{Float32, 2, (RGB{Float32}(0.0, 0.9254902, 0.3647059), RGB{Float32}(1.0, 0.85882354, 0.0))}
 ```
 
-Julia's inference engine is capable of calculating those values on Julia 1.7 and above, but not for Julia 1.6.
+For a method that takes type `C1` as input and returns type `C2`, being able to infer the return type (including those numeric values) generally requires Julia 1.7 or higher.
 A good workaround is to write code that returns `ColorMixture{T}` values with the same `T` as the inputs; see, for example, the definition of `clamp01` in this package.
