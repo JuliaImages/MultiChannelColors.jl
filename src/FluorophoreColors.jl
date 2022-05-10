@@ -1,5 +1,7 @@
 module FluorophoreColors
 
+using Compat
+
 using Reexport
 @reexport using FixedPointNumbers
 @reexport using ColorTypes

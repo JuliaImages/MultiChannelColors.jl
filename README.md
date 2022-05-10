@@ -78,6 +78,19 @@ on the element type.
 
 In many places, JuliaImages assumes that you can convert from one color space to another purely from knowing the type you want to convert to. This would not be possible if the RGB colors were encoded as a second field of the color.
 
-## Why does this package require a minimum of Julia 1.7?
+## I wrote some code and got lousy performance. How can I fix it?
 
-To achieve good performance, the RGB values must be aggressively constant-propagated, a feature available only on Julia 1.7 and higher.
+To achieve good performance, in some cases the RGB *values* must be aggressively constant-propagated, a feature available only on Julia 1.7 and higher. So if you're experiencing this problem on Julia 1.6, try a newer version.
+
+In greater detail, the issue is that there are circumstances where inference might need to be able to anticipate a type change like `C1 -> C2`, where
+
+```julia
+julia> C1 = typeof(ColorMixture(channels))
+ColorMixture{N0f8, 2, (RGB{N0f8}(0.0, 0.925, 0.365), RGB{N0f8}(1.0, 0.859, 0.0))}
+
+julia> C2 = typeof(ColorMixture(float.(channels)))
+ColorMixture{Float32, 2, (RGB{Float32}(0.0, 0.9254902, 0.3647059), RGB{Float32}(1.0, 0.85882354, 0.0))}
+```
+
+Julia's inference engine is capable of calculating those values on Julia 1.7 and above, but not for Julia 1.6.
+A good workaround is to write code that returns `ColorMixture{T}` values with the same `T` as the inputs; see, for example, the definition of `clamp01` in this package.
