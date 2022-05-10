@@ -18,7 +18,8 @@ jobs:
       fail-fast: false
       matrix:
         version:
-          - '1.7'
+          - '1.6'     # 1.6 lacks `@constprop :aggressive` so it's a bit poorly-supported
+          - '1.7'     # therefore make sure we directly test 1.7 as well as more current versions
           - '1'
           - 'nightly'
         os:
