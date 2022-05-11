@@ -33,7 +33,33 @@ julia> convert(RGB, c)
 RGB{N0f16}(0.75,0.87549,0.09117)
 ```
 
-The latter is how this color would be rendered in a viewer; embedded in a function, the conversion is extremely well optimized (~2.2ns on the author's machine).
+The latter is how this color would be rendered in a viewer.
+
+## Overflow protection
+
+Depending on the colors you pick for conversion to RGB (e.g., `channels`), it is possible to exceed the 0-to-1 bounds of RGB.
+With the choice above,
+
+```julia
+julia> c = ctemplate(0.99, 0.99)
+(0.99001N0f16₁, 0.99001N0f16₂)
+
+julia> convert(RGB, c)
+ERROR: ArgumentError: component type N0f16 is a 16-bit type representing 65536 values from 0.0 to 1.0,
+  but the values (0.9900053f0, 1.7664759f0, 0.36105898f0) do not lie within this range.
+  See the READMEs for FixedPointNumbers and ColorTypes for more information.
+Stacktrace:
+[...]
+```
+
+If you want to guard against such errors, one good choice would be
+
+```julia
+julia> convert(RGB{Float32}, c)
+RGB{Float32}(0.9900053, 1.7664759, 0.36105898)
+```
+
+Conversions to floating-point types also tend to be faster, since the values do not have to be checked.
 
 ## Advanced usage
 
@@ -43,9 +69,15 @@ However, constructing `ctemplate` as above is an inherently non-inferrable opera
 inferrably, you can use the macro version:
 
 ```julia
-f(i1, i2) = ColorMixture{N0f8}((fluorophore_rgb"EGFP", fluorophore_rgb"tdTomato"), (i1, i2))
+f(i1, i2) = ColorMixture{N0f16}((fluorophore_rgb"EGFP", fluorophore_rgb"tdTomato"), (i1, i2))
 ```
 
-Note the absence of `[]` brackets around the fluorophore names. For such constructors, `N0f8` is the only option if you're
-looking up the RGB values with `fluorophore_rgb`; however, if you hard-code the RGB values there is no restriction
-on the element type.
+Note the absence of `[]` brackets around the fluorophore names.
+
+## Why are the RGB colors encoded in the *type*? Why not a value field?
+
+In many places, JuliaImages assumes that you can convert from one color space to another purely from knowing the type you want to convert to. This would not be possible if the RGB colors were encoded as a second field of the color.
+
+## I wrote some code and got lousy performance. How can I fix it?
+
+To achieve good performance, in some cases the RGB *values* must be aggressively constant-propagated, a feature available only on Julia 1.7 and higher. So if you're experiencing this problem on Julia 1.6, try a newer version.
