@@ -33,7 +33,7 @@ julia> convert(RGB, c)
 RGB{N0f16}(0.75,0.87549,0.09117)
 ```
 
-The latter is how this color would be rendered in a viewer; embedded in a function, the conversion is extremely well optimized (~2.2ns on the author's machine).
+The latter is how this color would be rendered in a viewer.
 
 ## Overflow protection
 
@@ -59,6 +59,8 @@ julia> convert(RGB{Float32}, c)
 RGB{Float32}(0.9900053, 1.7664759, 0.36105898)
 ```
 
+Conversions to floating-point types also tend to be faster, since the values do not have to be checked.
+
 ## Advanced usage
 
 `ctemplate` stores the RGB *values* for each fluorophore as a type-parameter. This allows efficient conversion to RGB
@@ -67,12 +69,10 @@ However, constructing `ctemplate` as above is an inherently non-inferrable opera
 inferrably, you can use the macro version:
 
 ```julia
-f(i1, i2) = ColorMixture{N0f8}((fluorophore_rgb"EGFP", fluorophore_rgb"tdTomato"), (i1, i2))
+f(i1, i2) = ColorMixture{N0f16}((fluorophore_rgb"EGFP", fluorophore_rgb"tdTomato"), (i1, i2))
 ```
 
-Note the absence of `[]` brackets around the fluorophore names. For such constructors, `N0f8` is the only option if you're
-looking up the RGB values with `fluorophore_rgb`; however, if you hard-code the RGB values there is no restriction
-on the element type.
+Note the absence of `[]` brackets around the fluorophore names.
 
 ## Why are the RGB colors encoded in the *type*? Why not a value field?
 
@@ -81,16 +81,3 @@ In many places, JuliaImages assumes that you can convert from one color space to
 ## I wrote some code and got lousy performance. How can I fix it?
 
 To achieve good performance, in some cases the RGB *values* must be aggressively constant-propagated, a feature available only on Julia 1.7 and higher. So if you're experiencing this problem on Julia 1.6, try a newer version.
-
-In greater detail, the issue is that there are circumstances where inference might need to be able to anticipate a type change like `C1 -> C2`, where
-
-```julia
-julia> C1 = typeof(ColorMixture(channels))
-ColorMixture{N0f8, 2, (RGB{N0f8}(0.0, 0.925, 0.365), RGB{N0f8}(1.0, 0.859, 0.0))}
-
-julia> C2 = typeof(ColorMixture(float.(channels)))
-ColorMixture{Float32, 2, (RGB{Float32}(0.0, 0.9254902, 0.3647059), RGB{Float32}(1.0, 0.85882354, 0.0))}
-```
-
-For a method that takes type `C1` as input and returns type `C2`, being able to infer the return type (including those numeric values) generally requires Julia 1.7 or higher.
-A good workaround is to write code that returns `ColorMixture{T}` values with the same `T` as the inputs; see, for example, the definition of `clamp01` in this package.

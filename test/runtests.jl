@@ -31,6 +31,13 @@ using ImageCore
         @test c.channels[1] == c.channels[2] == 0.5
         @test convert(RGB, c) ≈ 0.5*channels[1] + 0.5*channels[2]
 
+        fchannels = float.(channels)
+        if Base.VERSION >= v"1.8.0-DEV.363"
+            @test_throws r"ColorMixture.*expected Tuple{RGB{N0f8}, +RGB{N0f8}}.*got a value of type Tuple{RGB{Float32}, +RGB{Float32}}" ColorMixture{Float32,2,fchannels}(0.1, 0.2)
+        else
+            @test_throws TypeError ColorMixture{Float32,2,fchannels}(0.1, 0.2)
+        end
+
         # Overflow behavior
         ctemplate = ColorMixture{N0f8}((RGB(1, 0, 0), RGB(0.5, 0.5, 0)))
         c = ctemplate(0.8, 0.8)
@@ -107,11 +114,10 @@ using ImageCore
         @test convert(RGB{Float32}, c) === RGB{Float32}(1.2, 0.4, 0)
         @test clamp01(c)    === RGB{N0f8}(1, 0.4, 0)
         @test clamp01nan(c) === RGB{N0f8}(1, 0.4, 0)
-        ctemplate = ColorMixture((RGB{Float32}(1, 0, NaN), RGB{Float32}(0.5, 0.5, NaN)))
-        c = ctemplate(0.8, 0.8)
-        @test isequal(convert(RGB, c), RGB{Float32}(1.2,0.4,NaN))
-        @test isequal(clamp01(c), RGB{Float32}(1.0,0.4,NaN))
-        @test clamp01nan(c) === RGB{Float32}(1, 0.4, 0)
+        ctemplate = ColorMixture{Float32}((RGB(1, 0, 0), RGB(0.5, 0.5, 0)))
+        c = ctemplate(0.8, NaN)
+        @test isequal(convert(RGB, c), RGB{Float32}(NaN,NaN,NaN))
+        @test clamp01nan(c) === RGB{Float32}(0, 0, 0)
     end
 
     @testset "IO" begin
