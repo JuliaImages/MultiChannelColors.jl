@@ -1,53 +1,63 @@
-# For custom colortypes, the main things we need are
-# - utitlies for extracting channels
-# - conversion to RGB for display
-# Making the main representation by RGB means we can do the latter efficiently without requiring
-# world-age violations.
+"""
+    AbstractMultiChannelColor{T<:Number,N}
+
+An abstract type for multichannel/multiband/hyperspectral colors. Concrete derived types should have
+a field, `channels`, which is a `NTuple{N,T}`. The channels can be returned with `Tuple(c::AbstractMultiChannelColor)`.
+"""
+abstract type AbstractMultiChannelColor{T<:Number,N} <: Color{T,N} end
+
+ColorTypes.comp1(c::AbstractMultiChannelColor) = c.channels[1]
+ColorTypes.comp2(c::AbstractMultiChannelColor) = c.channels[2]
+ColorTypes.comp3(c::AbstractMultiChannelColor) = c.channels[3]
+ColorTypes.comp4(c::AbstractMultiChannelColor) = c.channels[4]
+ColorTypes.comp5(c::AbstractMultiChannelColor) = c.channels[5]
+
+Base.Tuple(c::AbstractMultiChannelColor) = c.channels
+
+function Base.show(io::IO, c::AbstractMultiChannelColor)
+    print(io, '(')
+    chans = Tuple(c)
+    for (j, intensity) in enumerate(chans)
+        j > 1 && print(io, ", ")
+        print(io, intensity)
+        print_subscript(io, length(chans), j)
+    end
+    print(io, ')')
+end
 
 """
-    ColorMixture((rgb₁, rgb₂), (i₁, i₂))          # store intensities
-    ColorMixture{T}((rgb₁, rgb₂), (i₁, i₂))       # same, but coerce to element type T for colors and intensities
+    MultiChannelColor(i₁, i₂, ...)
+    MultiChannelColor((i₁, i₂, ...))
+    MultiChannelColor{T}(...)                # coerce to element type T
 
-Represent the multichannel fluorescence intensity at a point. `rgbⱼ` is an RGB color corresponding
-to fluorophore `j` (e.g., see [`fluorophore_rgb`](@ref)) whose emission intensity is `iⱼ`.
+Represent multichannel "raw" colors, which lack `convert` methods to standard color spaces.
+If `c` is a `MultiChannelColor` object, then `Tuple(c)` is a tuple of intensities (one per channel).
 
-While the example shows two fluorophores, any number may be used, as long as the number of `rgb` colors
-matches the number of intensities `i`.
-
-If you're constructing such colors in a high-performance loop, there may be other methods that may
-yield better performance due to challenges with type-inference, unless the color is known
-at compile time.
-
-# Examples
-
-To construct a 16-bit "pixel" from a dual-channel EGFP (peak emission 507nm)/tdTomato (peak emission 581nm) image,
-you might do the following:
-
-```jldoctest
-julia> using FluorophoreColors
-
-julia> channelcolors = (fluorophore_rgb["EGFP"], fluorophore_rgb["tdTomato"]);
-
-julia> c = ColorMixture{N0f16}(channelcolors, #= GFP intensity =# 0.2, #= tdTomato intensity =# 0.85)
-(0.2N0f16₁, 0.85N0f16₂)
-
-julia> convert(RGB, c)
-RGB{N0f16}(0.85, 0.9151, 0.07294)
-```
-
-If you must construct colors inferrably inside a function body, use
-
-```jldoctest; setup=:(using FluorophoreColors)
-julia> channelcolors = (fluorophore_rgb"EGFP", fluorophore_rgb"tdTomato");
-
-julia> c = ColorMixture{N0f8}(channelcolors, #= GFP intensity =# 0.2, #= tdTomato intensity =# 0.85)
-(0.2N0f8₁, 0.851N0f8₂)
-```
-
-This allows the RGB *values* to be visible to the compiler. However, the fluorophore names must be hard-coded,
-and you must preserve the `N0f8` element type of fluorophore_rgb"NAME".
+[`ColorMixture`](@ref) is an alternative with a built-in conversion to RGB.
 """
-struct ColorMixture{T,N,Cs} <: Color{T,N}
+struct MultiChannelColor{T<:Number,N} <: AbstractMultiChannelColor{T,N}
+    channels::NTuple{N,T}
+end
+
+MultiChannelColor{T}(channels::NTuple{N,Any}) where {T<:Number,N} = MultiChannelColor{T,N}(channels)
+MultiChannelColor{T}(channels::Vararg{Any,N}) where {T<:Number,N} = MultiChannelColor{T}(channels)
+
+MultiChannelColor(channels::NTuple{N,Number}) where {N} = MultiChannelColor(promote(channels...))
+MultiChannelColor(channels::Vararg{Number,N}) where {N} = MultiChannelColor(channels)
+
+
+"""
+    ColorMixture((rgb₁, rgb₂, ...), (i₁, i₂, ...))
+    ColorMixture((rgb₁, rgb₂, ...), i₁, i₂, ...)
+    ColorMixture{T}(...)                       # coerce intensities to element type
+
+Represent a multichannel color with a defined conversion to RGB. `rgbⱼ` is an RGB color corresponding
+to channel `j`, and its intensity is `iⱼ`. Colors are converted to RGB, `convert(RGB, c)`, using intensity-weighting:
+`rgb = sum(ivalues .* rgbvalues)`.
+
+[`MultiChannelColor`](@ref) is an alternative that does not require an `rgb` list and has no built-in conversion to RGB.
+"""
+struct ColorMixture{T<:Number,N,Cs} <: AbstractMultiChannelColor{T,N}
     channels::NTuple{N,T}
 
     Compat.@constprop :aggressive function ColorMixture{T,N,Cs}(channels::NTuple{N}) where {T,N,Cs}
@@ -60,51 +70,61 @@ Compat.@constprop :aggressive ColorMixture{T}(Cs::NTuple{N,RGB{N0f8}}, channels:
 Compat.@constprop :aggressive ColorMixture{T}(Cs::NTuple{N,AbstractRGB}, channels::NTuple{N,Real}) where {T,N} = ColorMixture{T,N,RGB{N0f8}.(Cs)}(channels)
 Compat.@constprop :aggressive ColorMixture{T}(Cs::NTuple{N,AbstractRGB}, channels::Vararg{Real,N}) where {T,N} = ColorMixture{T}(Cs, channels)
 
+Compat.@constprop :aggressive ColorMixture(Cs::NTuple{N,AbstractRGB}, channels::NTuple{N,Integer}) where {N} = ColorMixture{N0f8}(Cs, channels)
 Compat.@constprop :aggressive ColorMixture(Cs::NTuple{N,AbstractRGB}, channels::NTuple{N,Real}) where {N} = ColorMixture{eltype(map(z -> zero(N0f8)*z, channels))}(Cs, channels)
 Compat.@constprop :aggressive ColorMixture(Cs::NTuple{N,AbstractRGB}, channels::Vararg{Real,N}) where {N} = ColorMixture(Cs, channels)
 
 """
-    cobj = ColorMixture((rgb₁, rgb₂))        # create an all-zeros ColorMixture with N0f8 channel intensities
-    cobj = ColorMixture{T}((rgb₁, rgb₂))     # same, but specify the element type
-    c = cobj((i₁, i₂))                       # Construct non-zero ColorMixture (inferrably)
+    ctemplate = ColorMixture((rgb₁, rgb₂))        # create an all-zeros ColorMixture with N0f8 channel intensities
+    ctemplate = ColorMixture{T}((rgb₁, rgb₂))     # same, but specify the element type
+    c = ctemplate((i₁, i₂))                       # Construct non-zero ColorMixture of the same type as `ctemplate`
 
-Create a ColorMixture `c` from a "template" `cobj`. `c` will be the same type as `cobj`.
+Create a ColorMixture "template" `ctemplate` from which other non-zero colors `c` may be created.
 
-`cobj((i...,))` is a constructor form that is performance-favorable, if the type of `cobj`
+`ctemplate((i...,))` is a constructor form that is performance-favorable, if the type of `ctemplate`
 is known. In conjunction with a [function barrier](https://docs.julialang.org/en/v1/manual/performance-tips/#kernel-functions),
 this form can be used to circumvent performance problems due to poor inferrability.
 """
-ColorMixture{T}(Cs::NTuple{N,AbstractRGB}) where {T,N} = ColorMixture{T}(Cs, ntuple(_ -> zero(T), N))
+ColorMixture{T}(Cs::NTuple{N,AbstractRGB}) where {T<:Number,N} = ColorMixture{T}(Cs, ntuple(_ -> zero(T), N))
 ColorMixture(Cs::NTuple{N,RGB{N0f8}}) where {N} = ColorMixture{N0f8}(Cs)
 
 (::ColorMixture{T,N,Cs})(channels::NTuple{N,Real}) where {T,N,Cs} = ColorMixture{T,N,Cs}(channels)
 (::ColorMixture{T,N,Cs})(channels::Vararg{Real,N}) where {T,N,Cs} = ColorMixture{T,N,Cs}(channels)
 
 
-Base.:(==)(a::ColorMixture{Ta,N,Cs}, b::ColorMixture{Tb,N,Cs}) where {Ta,Tb,N,Cs} = a.channels == b.channels
+Base.:(==)(a::ColorMixture{Ta,N,Cs}, b::ColorMixture{Tb,N,Cs}) where {Ta<:Number,Tb<:Number,N,Cs} = a.channels == b.channels
 Base.:(==)(a::ColorMixture, b::ColorMixture) = false
 
-function Base.show(io::IO, c::ColorMixture)
-    print(io, '(')
-    for (j, intensity) in enumerate(c.channels)
-        j > 1 && print(io, ", ")
-        print(io, intensity)
-        print_subscript(io, length(c), j)
-    end
-    print(io, ')')
-end
+Base.isequal(a::ColorMixture{Ta,N,Cs}, b::ColorMixture{Tb,N,Cs}) where {Ta<:Number,Tb<:Number,N,Cs} = isequal(a.channels, b.channels)
+Base.isequal(a::ColorMixture, b::ColorMixture) = false
 
 # These definitions use floats to avoid overflow
-function Base.convert(::Type{RGB{T}}, c::ColorMixture{T,N,Cs}) where {T,N,Cs}
-    convert(RGB{T}, sum(map(*, c.channels, Cs); init=zero(RGB{floattype(T)})))
-end
-function Base.convert(::Type{RGB{T}}, c::ColorMixture{R,N,Cs}) where {T,R,N,Cs}
+function Base.convert(::Type{RGB{T}}, c::ColorMixture{R,N,Cs}) where {T,R<:Number,N,Cs}
     convert(RGB{T}, sum(map((w, rgb) -> convert(RGB{floattype(T)}, w*rgb), c.channels, Cs)))
 end
-Base.convert(::Type{RGB}, c::ColorMixture{T}) where T = convert(RGB{T}, c)
+Base.convert(::Type{RGB}, c::ColorMixture{T}) where T<:Number = convert(RGB{T}, c)
 Base.convert(::Type{RGB24}, c::ColorMixture) = convert(RGB24, convert(RGB, c))
 
+Base.convert(::Type{C}, c::ColorMixture{T}) where {C<:Colorant,T} = convert(C, convert(RGB{floattype(T)}, c))
+
 ColorTypes._comp(::Val{N}, c::ColorMixture) where N = c.channels[N]
-Compat.@constprop :aggressive ColorTypes.mapc(f, c::ColorMixture{T,N,Cs}) where {T,N,Cs} = ColorMixture(Cs, map(f, c.channels))
-Compat.@constprop :aggressive ColorTypes.mapreducec(f, op, v0, c::ColorMixture{T,N,Cs}) where {T,N,Cs} = mapreduce(f, op, v0, c.channels)
-Compat.@constprop :aggressive ColorTypes.reducec(op, v0, c::ColorMixture{T,N,Cs}) where {T,N,Cs} = reduce(op, c.channels; init=v0)
+Compat.@constprop :aggressive ColorTypes.mapc(f, c::ColorMixture{T,N,Cs}) where {T<:Number,N,Cs} = ColorMixture(Cs, map(f, c.channels))
+Compat.@constprop :aggressive ColorTypes.mapreducec(f, op, v0, c::ColorMixture{T,N,Cs}) where {T<:Number,N,Cs} = mapreduce(f, op, c.channels; init=v0)
+Compat.@constprop :aggressive ColorTypes.reducec(op, v0, c::ColorMixture{T,N,Cs}) where {T<:Number,N,Cs} = reduce(op, c.channels; init=v0)
+
+# Default mappings
+
+"""
+    GreenMagenta{T}(intensities)
+    GreenMagenta(intensities)
+
+Construct a [`ColorMixture`](@ref) with the specified intensities that colorizes the first channel with green and the second with magenta.
+"""
+const GreenMagenta{T} = ColorMixture{T,2,(RGB(0,1,0), RGB(1,0,1))}
+"""
+    MagentaGreen{T}(intensities)
+    MagentaGreen(intensities)
+
+Construct a [`ColorMixture`](@ref) with the specified intensities that colorizes the first channel with magenta and the second with green.
+"""
+const MagentaGreen{T} = ColorMixture{T,2,(RGB(1,0,1), RGB(0,1,0))}
