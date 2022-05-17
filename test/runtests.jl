@@ -1,12 +1,12 @@
-using FluorophoreColors
+using MultiChannelColors
 using Test
 
 # interacts via @require
 using StructArrays
 using ImageCore
 
-@testset "FluorophoreColors.jl" begin
-    @test isempty(detect_ambiguities(FluorophoreColors))
+@testset "MultiChannelColors.jl" begin
+    @test isempty(detect_ambiguities(MultiChannelColors))
 
     @testset "Fluorophore lookup" begin
         cfp = fluorophore_rgb["ECFP"]
@@ -78,8 +78,8 @@ using ImageCore
         else
             @test_broken @inferred(mapc(x->2x, c)) === ColorMixture{Float32}(channels, (0.8, 0.4))
         end
-        @test @inferred(mapreducec(x->2x, +, c)) === 1.2f0
-        @test @inferred(reducec(+, c)) === reduce(+, (0.4N0f8, 0.2N0f8))
+        @test @inferred(mapreducec(x->2x, +, 0f0, c)) === 1.2f0
+        @test @inferred(reducec(+, 0N0f8, c)) === reduce(+, (0.4N0f8, 0.2N0f8))
     end
 
     @testset "StructArrays" begin
@@ -94,7 +94,7 @@ using ImageCore
         @test red[1] === 0.0N0f8
 
         # Hyperspectral
-        cols = FluorophoreColors.Colors.distinguishable_colors(16, [RGB(0,0,0)]; dropseed=true)
+        cols = MultiChannelColors.Colors.distinguishable_colors(16, [RGB(0,0,0)]; dropseed=true)
         ctemplate = ColorMixture{Float32}((cols...,))
         comps = collect(reshape((0:31)/32f0, 16, 2))
         compsr = reinterpret(reshape, typeof(ctemplate), comps)
@@ -123,10 +123,10 @@ using ImageCore
     @testset "IO" begin
         channels = (fluorophore_rgb["EGFP"], fluorophore_rgb["tdTomato"])
         c = ColorMixture(channels, (1, 0))
-        @test sprint(show, c) == "(1.0₁, 0.0₂)"
+        @test sprint(show, c) == "(1.0N0f8₁, 0.0N0f8₂)"
 
         # Hyperspectral
-        cols = FluorophoreColors.Colors.distinguishable_colors(16, [RGB(0,0,0)]; dropseed=true)
+        cols = MultiChannelColors.Colors.distinguishable_colors(16, [RGB(0,0,0)]; dropseed=true)
         ctemplate = ColorMixture{Float32}((cols...,))
         c = ctemplate([i/16 for i = 0:15]...)
         @test sprint(show, c) == "(0.0₀₁, 0.0625₀₂, 0.125₀₃, 0.1875₀₄, 0.25₀₅, 0.3125₀₆, 0.375₀₇, 0.4375₀₈, 0.5₀₉, 0.5625₁₀, 0.625₁₁, 0.6875₁₂, 0.75₁₃, 0.8125₁₄, 0.875₁₅, 0.9375₁₆)"

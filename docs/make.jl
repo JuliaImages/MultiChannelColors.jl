@@ -1,24 +1,26 @@
-using FluorophoreColors
+using MultiChannelColors
 using Documenter
 
-DocMeta.setdocmeta!(FluorophoreColors, :DocTestSetup, :(using FluorophoreColors); recursive=true)
+DocMeta.setdocmeta!(MultiChannelColors, :DocTestSetup, :(using MultiChannelColors); recursive=true)
 
 makedocs(;
-    modules=[FluorophoreColors],
+    modules=[MultiChannelColors],
     authors="Tim Holy <tim.holy@gmail.com> and contributors",
-    repo="https://github.com/JuliaImages/FluorophoreColors.jl/blob/{commit}{path}#{line}",
-    sitename="FluorophoreColors.jl",
+    repo="https://github.com/JuliaImages/MultiChannelColors.jl/blob/{commit}{path}#{line}",
+    sitename="MultiChannelColors.jl",
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://JuliaImages.github.io/FluorophoreColors.jl",
+        canonical="https://juliaimages.org/MultiChannelColors.jl",
         assets=String[],
     ),
     pages=[
         "Home" => "index.md",
+        "FAQ" => "faq.md",
+        "Reference" => "api.md",
     ],
 )
 
 deploydocs(;
-    repo="github.com/JuliaImages/FluorophoreColors.jl",
+    repo="github.com/JuliaImages/MultiChannelColors.jl",
     devbranch="main",
 )

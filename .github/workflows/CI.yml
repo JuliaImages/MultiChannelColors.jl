@@ -55,6 +55,6 @@ jobs:
       - run: |
           julia --project=docs -e '
             using Documenter: DocMeta, doctest
-            using FluorophoreColors
-            DocMeta.setdocmeta!(FluorophoreColors, :DocTestSetup, :(using FluorophoreColors); recursive=true)
-            doctest(FluorophoreColors)'
+            using MultiChannelColors
+            DocMeta.setdocmeta!(MultiChannelColors, :DocTestSetup, :(using MultiChannelColors); recursive=true)
+            doctest(MultiChannelColors)'

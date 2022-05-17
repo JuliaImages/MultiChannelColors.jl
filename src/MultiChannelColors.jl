@@ -1,4 +1,4 @@
-module FluorophoreColors
+module MultiChannelColors
 
 using Compat
 
@@ -9,7 +9,8 @@ using Colors
 using ColorVectorSpace
 using Requires
 
-export fluorophore_rgb, @fluorophore_rgb_str, ColorMixture
+export AbstractMultiChannelColor, MultiChannelColor, ColorMixture, GreenMagenta, MagentaGreen
+export fluorophore_rgb, @fluorophore_rgb_str
 
 include("types.jl")
 include("fluorophores.jl")
