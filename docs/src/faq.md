@@ -4,7 +4,7 @@
 
 In many places, JuliaImages assumes that you can convert from one color space to another purely from knowing the type you want to convert to. This would not be possible if the RGB colors were encoded as a second field of the color.
 
-If you consider an entire image `Array{<:ColorMixture}`, the mental model JuliaImages uses, then you'll realize that storing the RGB colors as a value field would also hurt the performance because it requires an additional set of memories for each pixel.
+If you consider an entire image `Array{<:ColorMixture}` (the preferred default representation for code in JuliaImages), it becomes clear that storing the RGB colors as a value field would also require additional memory for each pixel.
 
 ## I wrote some code and got lousy performance. How can I fix it?
 
@@ -23,4 +23,4 @@ ctemplate = ColorMixture((rgb1, rgb2))
 end
 ```
 
-In this case `ctemplate` encodes the type and code in `make_image_and_do_something` will be inferrable even if the type of the created `ctemplate` is not inferrable in the calling scope.
+In this case `ctemplate` encodes the type, and code in `make_image_and_do_something` will be inferrable even if the type of the created `ctemplate` is not inferrable in its creation scope.

@@ -145,6 +145,8 @@ When objects are not created by code but instead loaded from an external source 
    img = StructArray{MultiChannelColor{N4f12,11}}(A; dims=3)
    ```
 
+It is possible that simpler syntaxes will be developed in future releases.
+
 ## Additional features
 
 ### Fluorophores
