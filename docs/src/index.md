@@ -22,17 +22,17 @@ In addition to giving access to specific types defined below, this will import t
 
 The color types in this package support two fundamental categories of operations:
 
-- arithmetic operations such as `+` and `-` and multiplying or dividing by a scalar. You can also scale each color channel independently with `⊙` (obtained with `\odotTAB`) or its synonym `hadamard`, e.g., `g ⊙ c` where `c` is a color object defined in this package and `g` is a tuple of real numbers (the "gains").
+- arithmetic operations such as `+` and `-` and multiplying or dividing by a scalar. You can also scale each color channel independently with `⊙` (obtained with `\odot<tab>`) or its synonym `hadamard`, e.g., `g ⊙ c` where `c` is a color object defined in this package and `g` is a tuple of real numbers (the "gains").
 - extracting the independent channel intensities as a tuple with `Tuple(c)`.
 
 When creating `c`, you have two choices which primarily affect visualization:
 
-- to use "bare" colors that store the multichannel data but lack any default conversion to other color spaces. This might be most appropriate if you have more than 3 channels, for which there may be many different ways to visualize the data they encode.
-- to use colors with built-in conversion to RGB, making them work automatically in standard visualization tools. This may be most appropriate when you have 3 or fewer channels.
+- to use ["bare" colors](@ref index_multichannelcolor) that store the multichannel data but lack any default conversion to other color spaces. This might be most appropriate if you have more than 3 channels, for which there may be many different ways to visualize the data they encode.
+- to use [colors with built-in conversion to RGB](@ref index_colormixture), making them work automatically in standard visualization tools. This may be most appropriate when you have 3 or fewer channels.
 
 Both options will be discussed below. See the [JuliaImages documentation on visualization](https://juliaimages.org/latest/install/#sec_visualization) for more information about tools for viewing images.
 
-### "Bare" colors: `MultiChannelColor`
+### ["Bare" colors: `MultiChannelColor`](@id index_multichannelcolor)
 
 A `MultiChannelColor` object is essentially a glorified tuple, one that can be recognized as a [`Colorant`](https://github.com/JuliaGraphics/ColorTypes.jl#the-type-hierarchy-and-abstract-types) but with comparatively few automatic behaviors. For example, if you're working with [Landsat 8](https://en.wikipedia.org/wiki/Landsat_8) data with
 [11 wavelength bands](https://landsat.gsfc.nasa.gov/satellites/landsat-8/landsat-8-bands/), one might create a pixel this way:
@@ -67,7 +67,7 @@ julia> using MappedArrays
 julia> imgrgb = mappedarray(evi, img);
 ```
 
-### RGB-convertible colors: `ColorMixture`
+### [RGB-convertible colors: `ColorMixture`](@id index_colormixture)
 
 `ColorMixture` objects are like `MultiChannelColor` objects except they have a built-in conversion to RGB. Each channel gets assigned a specific RGB color, say `rgbⱼ` for the `j`th channel, along with an intensity `iⱼ`.
 `rgbⱼ` is a feature of the *type* (shared by all objects of the same type) whereas `iⱼ` is a property of *objects*.

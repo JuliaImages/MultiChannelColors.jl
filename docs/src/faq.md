@@ -4,6 +4,8 @@
 
 In many places, JuliaImages assumes that you can convert from one color space to another purely from knowing the type you want to convert to. This would not be possible if the RGB colors were encoded as a second field of the color.
 
+If you consider an entire image `Array{<:ColorMixture}`, the mental model JuliaImages uses, then you'll realize that storing the RGB colors as a value field would also hurt the performance because it requires an additional set of memories for each pixel.
+
 ## I wrote some code and got lousy performance. How can I fix it?
 
 To achieve good performance, in some cases the RGB *values* must be aggressively constant-propagated, a feature available only on Julia 1.7 and higher. So if you're experiencing this problem on Julia 1.6, try a newer version.

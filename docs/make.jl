@@ -10,7 +10,7 @@ makedocs(;
     sitename="MultiChannelColors.jl",
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://JuliaImages.github.io/MultiChannelColors.jl",
+        canonical="https://juliaimages.org/MultiChannelColors.jl",
         assets=String[],
     ),
     pages=[
