@@ -28,7 +28,7 @@ Base.copy(c::AbstractMultiChannelColor) = c
 (+)(c::AbstractMultiChannelColor{Bool}) = c
 (-)(c::AbstractMultiChannelColor) = mapc(-, c)
 Base.abs(c::AbstractMultiChannelColor) = mapc(abs, c)
-LinearAlgebra.norm(c::AbstractMultiChannelColor, p::Real=2) = (cc = Tuple(c); norm(cc, p)/(p == 0 ? length(cc) : length(cc)^(1/p)))
+LinearAlgebra.norm(c::AbstractMultiChannelColor, p::Real=2) = norm(Tuple(c), p)
 Base.abs2(c::AbstractMultiChannelColor) = mapreducec(v->v^2, +, zero(acctype(eltype(c))), c)
 
 (+)(a::C, b::C) where {C<:AbstractMultiChannelColor} = _mapc(rettype(+, a, b), +, a, b)

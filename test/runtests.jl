@@ -1,5 +1,6 @@
 using MultiChannelColors
 using Test
+using LinearAlgebra
 
 # interacts via @require
 using StructArrays
@@ -37,6 +38,23 @@ using ImageCore
         else
             @test_throws TypeError ColorMixture{Float32,2,fchannels}(0.1, 0.2)
         end
+
+        # UnionAll constructors
+        c = MultiChannelColor{Float32}(0.1, 0.2)
+        @test eltype(base_color_type(c)((0.1N0f8, 0.2N0f8)))  === eltype(base_color_type(c)(0.1N0f8, 0.2N0f8))  === N0f8
+        @test eltype(base_color_type(c)((0.1N0f8, 0.2N0f16))) === eltype(base_color_type(c)(0.1N0f8, 0.2N0f16)) === N0f16
+        @test eltype(MultiChannelColor((0.1N0f8, 0.2N0f16)))  === eltype(MultiChannelColor(0.1N0f8, 0.2N0f16))  === N0f16
+        @test eltype(convert(MultiChannelColor{N0f8}, c)) === N0f8
+
+        c = MagentaGreen{Float32}(0.1, 0.2)
+        @test eltype(base_color_type(c)((0.1N0f8, 0.2N0f8)))  === eltype(base_color_type(c)(0.1N0f8, 0.2N0f8))  === N0f8
+        @test eltype(base_color_type(c)((0.1N0f8, 0.2N0f16))) === eltype(base_color_type(c)(0.1N0f8, 0.2N0f16)) === N0f16
+        @test eltype(MagentaGreen((0.1N0f8, 0.2N0f16)))  === eltype(MagentaGreen(0.1N0f8, 0.2N0f16))  === N0f16
+        @test eltype(convert(MagentaGreen{N0f8}, c)) === N0f8
+        fT(x, y) = ColorMixture{Float64}((RGB(0,1,0), RGB(1,0,0)), x, y)
+        f(x, y) = ColorMixture((RGB(0,1,0), RGB(1,0,0)), x, y)
+        @test Tuple(@inferred(fT(0.1, 0.2))) === (0.1, 0.2)
+        @test Tuple(@inferred(f(0.1, 0.2))) === (0.1, 0.2)
 
         # Overflow behavior
         ctemplate = ColorMixture{N0f8}((RGB(1, 0, 0), RGB(0.5, 0.5, 0)))
@@ -96,7 +114,7 @@ using ImageCore
         @test @inferred(reducec(+, 0N0f8, c)) === reduce(+, (0.4N0f8, 0.2N0f8))
     end
 
-    @testset "Arithmetic" begin
+    @testset "Operations" begin
         MCC{T} = MultiChannelColor{T,2}
         CM{T} = GreenMagenta{T}
         for (Ta, Tb) in ((N0f8, N0f8),
@@ -105,13 +123,19 @@ using ImageCore
                          (Float32, N0f8))
             for C in (MCC, CM)
                 a, b = C{Ta}(0.2, 0.4), C{Tb}(0.2, 0.1)
+                @test +a === a
+                if Ta <: AbstractFloat
+                    @test -a === C{Ta}(-0.2, -0.4)
+                    @test abs(-a) === a
+                end
+                @test norm(a) == norm([Tuple(a)...])
+                @test abs2(a) === float(Ta(0.2)^2) + Ta(0.4)^2
                 @test a + b === C(Ta(0.2) + Tb(0.2), Ta(0.4) + Tb(0.1))
                 @test a - b === C(Ta(0.2) - Tb(0.2), Ta(0.4) - Tb(0.1))
                 @test 2a === a*2 === C(2*Ta(0.2), 2*Ta(0.4))
                 @test a/2 === C(Ta(0.2)/2, Ta(0.4)/2)
                 @test a ⊙ b === C(Ta(0.2)*Tb(0.2), Ta(0.4)*Tb(0.1))
                 @test a ⋅ b === float(Ta(0.2)*Tb(0.2)) + Ta(0.4)*Tb(0.1)
-                @test abs2(a) === float(Ta(0.2)^2) + Ta(0.4)^2
 
                 @test a === copy(a)
                 x = [a, b]
@@ -120,6 +144,29 @@ using ImageCore
                 @test sum(x) == float(zero(a))
             end
         end
+        for C in (MCC, CM)
+            a = C{Bool}(true, false)
+            @test +a === a
+            x = [a, a]
+            @test sum(x) == 2a
+            x = typeof(a)[]
+            @test sum(x) == float(zero(a))
+        end
+
+        a = GreenMagenta(0.1, 0.2)
+        b = MagentaGreen(0.1, 0.2)
+        c = MagentaGreen(0.2, 0.1)
+        @test a != b
+        @test a != c
+        @test a == a
+        @test !isequal(a, b)
+        @test !isequal(a, c)
+        @test  isequal(a, a)
+        a = GreenMagenta(0.1, NaN)
+        b = MagentaGreen(0.1, NaN)
+        @test a != a
+        @test isequal(a, a)
+        @test !isequal(a, b)
     end
 
     @testset "Conversion (other color spaces)" begin
@@ -152,6 +199,10 @@ using ImageCore
         compst = collect(transpose(comps))
         soa = StructArray{typeof(ctemplate)}(compst; dims=2)
         @test soa[1] == ctemplate(ntuple(i->(i-1)/32, 16))
+        c = soa[1]
+        @test comp3(c) === Tuple(c)[3]
+        @test comp4(c) === Tuple(c)[4]
+        @test comp5(c) === Tuple(c)[5]
     end
 
     @testset "ImageCore" begin
@@ -177,5 +228,8 @@ using ImageCore
         ctemplate = ColorMixture{Float32}((cols...,))
         c = ctemplate([i/16 for i = 0:15]...)
         @test sprint(show, c) == "(0.0₀₁, 0.0625₀₂, 0.125₀₃, 0.1875₀₄, 0.25₀₅, 0.3125₀₆, 0.375₀₇, 0.4375₀₈, 0.5₀₉, 0.5625₁₀, 0.625₁₁, 0.6875₁₂, 0.75₁₃, 0.8125₁₄, 0.875₁₅, 0.9375₁₆)"
+
+        # To increase coverage (`csvparse` only runs when the package is built, so it appears untested even though it is not)
+        @test MultiChannelColors.csvparse(joinpath(dirname(@__DIR__), "data", "organics.csv")) isa Dict{String,RGB{N0f8}}
     end
 end
