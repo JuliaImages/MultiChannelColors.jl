@@ -53,8 +53,8 @@ using ImageCore
         @test eltype(convert(MagentaGreen{N0f8}, c)) === N0f8
         fT(x, y) = ColorMixture{Float64}((RGB(0,1,0), RGB(1,0,0)), x, y)
         f(x, y) = ColorMixture((RGB(0,1,0), RGB(1,0,0)), x, y)
-        @test Tuple(@inferred(fT(0.1, 0.2))) === (0.1, 0.2)
-        @test Tuple(@inferred(f(0.1, 0.2))) === (0.1, 0.2)
+        @test Tuple(Base.VERSION >= v"1.7.0" ? @inferred(fT(0.1, 0.2)) : fT(0.1, 0.2)) === (0.1, 0.2)
+        @test Tuple(Base.VERSION >= v"1.7.0" ? @inferred(f(0.1, 0.2)) : f(0.1, 0.2)) === (0.1, 0.2)
 
         # Overflow behavior
         ctemplate = ColorMixture{N0f8}((RGB(1, 0, 0), RGB(0.5, 0.5, 0)))
