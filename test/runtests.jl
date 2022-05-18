@@ -69,6 +69,20 @@ using ImageCore
         @test @inferred(ctmpl(1, 0)) === ColorMixture{N0f8}(channels, (1, 0))
     end
 
+    @testset "traits" begin
+        for c in (MultiChannelColor{Float32}(0.2, 0.4), GreenMagenta{Float32}(0.2, 0.4))
+            @test eltype(c) === Float32
+            @test length(c) == 2
+            @test color_type(c) === typeof(c)
+            @test !isconcretetype(base_color_type(c))
+            @test isconcretetype(base_color_type(c){N0f8})
+            @test isconcretetype(base_colorant_type(c){N0f8})
+            @test eltype(base_color_type(c){N0f8}) === N0f8
+            @test comp1(c) === 0.2f0
+            @test comp2(c) === 0.4f0
+        end
+    end
+
     @testset "mapc etc" begin
         channels = (fluorophore_rgb["EGFP"], fluorophore_rgb["tdTomato"])
         ctemplate = ColorMixture{N0f8}(channels)
@@ -80,6 +94,39 @@ using ImageCore
         end
         @test @inferred(mapreducec(x->2x, +, 0f0, c)) === 1.2f0
         @test @inferred(reducec(+, 0N0f8, c)) === reduce(+, (0.4N0f8, 0.2N0f8))
+    end
+
+    @testset "Arithmetic" begin
+        MCC{T} = MultiChannelColor{T,2}
+        CM{T} = GreenMagenta{T}
+        for (Ta, Tb) in ((N0f8, N0f8),
+                         (Float32, Float32),
+                         (N0f8, Float32),
+                         (Float32, N0f8))
+            for C in (MCC, CM)
+                a, b = C{Ta}(0.2, 0.4), C{Tb}(0.2, 0.1)
+                @test a + b === C(Ta(0.2) + Tb(0.2), Ta(0.4) + Tb(0.1))
+                @test a - b === C(Ta(0.2) - Tb(0.2), Ta(0.4) - Tb(0.1))
+                @test 2a === a*2 === C(2*Ta(0.2), 2*Ta(0.4))
+                @test a/2 === C(Ta(0.2)/2, Ta(0.4)/2)
+                @test a ⊙ b === C(Ta(0.2)*Tb(0.2), Ta(0.4)*Tb(0.1))
+                @test a ⋅ b === float(Ta(0.2)*Tb(0.2)) + Ta(0.4)*Tb(0.1)
+                @test abs2(a) === float(Ta(0.2)^2) + Ta(0.4)^2
+
+                @test a === copy(a)
+                x = [a, b]
+                @test sum(x) ≈ float(a) + b
+                x = typeof(a)[]
+                @test sum(x) == float(zero(a))
+            end
+        end
+    end
+
+    @testset "Conversion (other color spaces)" begin
+        if Base.VERSION >= v"1.8.0-DEV.363"
+            @test_throws "No conversion of (0.1₁, 0.2₂) to RGB{Float64} has been defined" convert(RGB, MultiChannelColor(0.1, 0.2))
+        end
+        @test convert(HSV, GreenMagenta{Float32}(0.2, 0.4)) === convert(HSV, RGB{Float32}(0.4, 0.2, 0.4))
     end
 
     @testset "StructArrays" begin

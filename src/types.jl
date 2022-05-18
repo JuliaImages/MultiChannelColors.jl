@@ -14,6 +14,8 @@ ColorTypes.comp5(c::AbstractMultiChannelColor) = c.channels[5]
 
 Base.Tuple(c::AbstractMultiChannelColor) = c.channels
 
+Base.zero(::Type{C}) where C <: AbstractMultiChannelColor{T,N} where {T<:Number,N} = C(ntuple(i->zero(T), N))
+
 function Base.show(io::IO, c::AbstractMultiChannelColor)
     print(io, '(')
     chans = Tuple(c)
@@ -39,12 +41,24 @@ struct MultiChannelColor{T<:Number,N} <: AbstractMultiChannelColor{T,N}
     channels::NTuple{N,T}
 end
 
-MultiChannelColor{T}(channels::NTuple{N,Any}) where {T<:Number,N} = MultiChannelColor{T,N}(channels)
-MultiChannelColor{T}(channels::Vararg{Any,N}) where {T<:Number,N} = MultiChannelColor{T}(channels)
+MultiChannelColor{T,N}(channels::Vararg{Number,N}) where {T<:Number,N} = MultiChannelColor{T,N}(channels)
+MultiChannelColor{T,N}(c::MultiChannelColor{S,N}) where {T<:Number,N,S<:Number} = MultiChannelColor{T,N}(Tuple(c))
+
+MultiChannelColor{T}(channels::NTuple{N,Number}) where {T<:Number,N} = MultiChannelColor{T,N}(channels)
+MultiChannelColor{T}(channels::Vararg{Number,N}) where {T<:Number,N} = MultiChannelColor{T}(channels)
+
+(MultiChannelColor{S,N} where S)(channels::NTuple{N,T}) where {T<:Number,N} = MultiChannelColor{T,N}(channels)
+(MultiChannelColor{S,N} where S)(channels::Vararg{T,N}) where {T<:Number,N} = MultiChannelColor{T,N}(channels)
+(MultiChannelColor{S,N} where S)(channels::NTuple{N,Number}) where N = (MultiChannelColor{R,N} where R)(promote(channels...))
+(MultiChannelColor{S,N} where S)(channels::Vararg{Number,N}) where N = (MultiChannelColor{R,N} where R)(promote(channels...))
 
 MultiChannelColor(channels::NTuple{N,Number}) where {N} = MultiChannelColor(promote(channels...))
 MultiChannelColor(channels::Vararg{Number,N}) where {N} = MultiChannelColor(channels)
 
+ColorTypes.base_colorant_type(::Type{MultiChannelColor{S,N}}) where {S<:Number,N} = MultiChannelColor{R,N} where R
+
+Base.convert(::Type{MultiChannelColor{T}}, c::AbstractMultiChannelColor{S}) where {T<:Number,S<:Number} = MultiChannelColor{T}(Tuple(c))
+Base.convert(::Type{MultiChannelColor{T,N}}, c::AbstractMultiChannelColor{S,N}) where {T<:Number,N,S<:Number} = MultiChannelColor{T,N}(Tuple(c))
 
 """
     ColorMixture((rgb₁, rgb₂, ...), (i₁, i₂, ...))
@@ -65,14 +79,22 @@ struct ColorMixture{T<:Number,N,Cs} <: AbstractMultiChannelColor{T,N}
         return new{T,N,Cs}(channels)
     end
 end
-ColorMixture{T,N,Cs}(channels::Vararg{Real,N}) where {T,N,Cs} = ColorMixture{T,N,Cs}(channels)
-Compat.@constprop :aggressive ColorMixture{T}(Cs::NTuple{N,RGB{N0f8}}, channels::NTuple{N,Real}) where {T,N} = ColorMixture{T,N,Cs}(channels)
-Compat.@constprop :aggressive ColorMixture{T}(Cs::NTuple{N,AbstractRGB}, channels::NTuple{N,Real}) where {T,N} = ColorMixture{T,N,RGB{N0f8}.(Cs)}(channels)
-Compat.@constprop :aggressive ColorMixture{T}(Cs::NTuple{N,AbstractRGB}, channels::Vararg{Real,N}) where {T,N} = ColorMixture{T}(Cs, channels)
+
+ColorMixture{T,N,Cs}(channels::Vararg{Number,N}) where {T,N,Cs} = ColorMixture{T,N,Cs}(channels)
+ColorMixture{T,N,Cs}(c::ColorMixture{S,N}) where {T,N,Cs,S} = ColorMixture{T,N,Cs}(Tuple(c))
+
+(ColorMixture{T,N,Cs} where T)(channels::NTuple{N,S}) where {S<:Number,N,Cs} = ColorMixture{S,N,Cs}(channels)
+(ColorMixture{T,N,Cs} where T)(channels::Vararg{S,N}) where {S<:Number,N,Cs} = ColorMixture{S,N,Cs}(channels)
+(ColorMixture{T,N,Cs} where T)(channels::NTuple{N,Number}) where {N,Cs} = (ColorMixture{R,N,Cs} where R)(promote(channels...))
+(ColorMixture{T,N,Cs} where T)(channels::Vararg{Number,N}) where {N,Cs} = (ColorMixture{R,N,Cs} where R)(promote(channels...))
+
+Compat.@constprop :aggressive ColorMixture{T}(Cs::NTuple{N,RGB{N0f8}}, channels::NTuple{N,Number}) where {T,N} = ColorMixture{T,N,Cs}(channels)
+Compat.@constprop :aggressive ColorMixture{T}(Cs::NTuple{N,AbstractRGB}, channels::NTuple{N,Number}) where {T,N} = ColorMixture{T,N,RGB{N0f8}.(Cs)}(channels)
+Compat.@constprop :aggressive ColorMixture{T}(Cs::NTuple{N,AbstractRGB}, channels::Vararg{Number,N}) where {T,N} = ColorMixture{T}(Cs, channels)
 
 Compat.@constprop :aggressive ColorMixture(Cs::NTuple{N,AbstractRGB}, channels::NTuple{N,Integer}) where {N} = ColorMixture{N0f8}(Cs, channels)
-Compat.@constprop :aggressive ColorMixture(Cs::NTuple{N,AbstractRGB}, channels::NTuple{N,Real}) where {N} = ColorMixture{eltype(map(z -> zero(N0f8)*z, channels))}(Cs, channels)
-Compat.@constprop :aggressive ColorMixture(Cs::NTuple{N,AbstractRGB}, channels::Vararg{Real,N}) where {N} = ColorMixture(Cs, channels)
+Compat.@constprop :aggressive ColorMixture(Cs::NTuple{N,AbstractRGB}, channels::NTuple{N,Number}) where {N} = ColorMixture{eltype(map(z -> zero(N0f8)*z, channels))}(Cs, channels)
+Compat.@constprop :aggressive ColorMixture(Cs::NTuple{N,AbstractRGB}, channels::Vararg{Number,N}) where {N} = ColorMixture(Cs, channels)
 
 """
     ctemplate = ColorMixture((rgb₁, rgb₂))        # create an all-zeros ColorMixture with N0f8 channel intensities
@@ -88,15 +110,12 @@ this form can be used to circumvent performance problems due to poor inferrabili
 ColorMixture{T}(Cs::NTuple{N,AbstractRGB}) where {T<:Number,N} = ColorMixture{T}(Cs, ntuple(_ -> zero(T), N))
 ColorMixture(Cs::NTuple{N,RGB{N0f8}}) where {N} = ColorMixture{N0f8}(Cs)
 
-(::ColorMixture{T,N,Cs})(channels::NTuple{N,Real}) where {T,N,Cs} = ColorMixture{T,N,Cs}(channels)
-(::ColorMixture{T,N,Cs})(channels::Vararg{Real,N}) where {T,N,Cs} = ColorMixture{T,N,Cs}(channels)
+(::ColorMixture{T,N,Cs})(channels::NTuple{N,Number}) where {T,N,Cs} = ColorMixture{T,N,Cs}(channels)
+(::ColorMixture{T,N,Cs})(channels::Vararg{Number,N}) where {T,N,Cs} = ColorMixture{T,N,Cs}(channels)
 
+ColorTypes.base_colorant_type(::Type{ColorMixture{S,N,Cs}}) where {S<:Number,N,Cs} = ColorMixture{T,N,Cs} where T
 
-Base.:(==)(a::ColorMixture{Ta,N,Cs}, b::ColorMixture{Tb,N,Cs}) where {Ta<:Number,Tb<:Number,N,Cs} = a.channels == b.channels
-Base.:(==)(a::ColorMixture, b::ColorMixture) = false
-
-Base.isequal(a::ColorMixture{Ta,N,Cs}, b::ColorMixture{Tb,N,Cs}) where {Ta<:Number,Tb<:Number,N,Cs} = isequal(a.channels, b.channels)
-Base.isequal(a::ColorMixture, b::ColorMixture) = false
+Base.convert(::Type{ColorMixture{T,N,Cs}}, c::AbstractMultiChannelColor{S,N}) where {T<:Number,N,Cs,S<:Number} = ColorMixture{T,N,Cs}(Tuple(c))
 
 # These definitions use floats to avoid overflow
 function Base.convert(::Type{RGB{T}}, c::ColorMixture{R,N,Cs}) where {T,R<:Number,N,Cs}
@@ -105,12 +124,16 @@ end
 Base.convert(::Type{RGB}, c::ColorMixture{T}) where T<:Number = convert(RGB{T}, c)
 Base.convert(::Type{RGB24}, c::ColorMixture) = convert(RGB24, convert(RGB, c))
 
-Base.convert(::Type{C}, c::ColorMixture{T}) where {C<:Colorant,T} = convert(C, convert(RGB{floattype(T)}, c))
-
 ColorTypes._comp(::Val{N}, c::ColorMixture) where N = c.channels[N]
 Compat.@constprop :aggressive ColorTypes.mapc(f, c::ColorMixture{T,N,Cs}) where {T<:Number,N,Cs} = ColorMixture(Cs, map(f, c.channels))
 Compat.@constprop :aggressive ColorTypes.mapreducec(f, op, v0, c::ColorMixture{T,N,Cs}) where {T<:Number,N,Cs} = mapreduce(f, op, c.channels; init=v0)
 Compat.@constprop :aggressive ColorTypes.reducec(op, v0, c::ColorMixture{T,N,Cs}) where {T<:Number,N,Cs} = reduce(op, c.channels; init=v0)
+
+Base.:(==)(a::ColorMixture{Ta,N,Cs}, b::ColorMixture{Tb,N,Cs}) where {Ta<:Number,Tb<:Number,N,Cs} = a.channels == b.channels
+Base.:(==)(a::ColorMixture, b::ColorMixture) = false
+
+Base.isequal(a::ColorMixture{Ta,N,Cs}, b::ColorMixture{Tb,N,Cs}) where {Ta<:Number,Tb<:Number,N,Cs} = isequal(a.channels, b.channels)
+Base.isequal(a::ColorMixture, b::ColorMixture) = false
 
 # Default mappings
 
