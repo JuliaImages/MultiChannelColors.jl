@@ -2,12 +2,6 @@
 @inline ColorVectorSpace._mapc(::Type{C}, f, a, b) where {C<:AbstractMultiChannelColor} = C(f.(Tuple(a), Tuple(b))...)
 
 ## Generic algorithms
-function ColorVectorSpace.arith_colorant_type(::Type{C}) where {C<:Colorant}
-    Cb = base_colorant_type(C)
-    isconcretetype(C) && C === Cb && return _arith_colorant_type(C) # non-parametric
-    return Cb
-end
-
 Base.add_sum(c1::AbstractMultiChannelColor,c2::AbstractMultiChannelColor) = mapc(Base.add_sum, c1, c2)
 Base.add_sum(c1::AbstractMultiChannelColor{Bool}, c2::AbstractMultiChannelColor{Bool}) = mapc((x1, x2) -> FixedPointNumbers.Treduce(x1) + FixedPointNumbers.Treduce(x2), c1, c2)
 Base.reduce_first(::typeof(Base.add_sum), c::AbstractMultiChannelColor) = mapc(x->Base.reduce_first(Base.add_sum, x), c)
