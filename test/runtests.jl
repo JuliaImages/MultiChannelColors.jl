@@ -142,6 +142,8 @@ using ImageCore
                 @test sum(x) ≈ float(a) + b
                 x = typeof(a)[]
                 @test sum(x) == float(zero(a))
+                x = [a]
+                @test sum(x) ≈ float(a)
             end
         end
         for C in (MCC, CM)
@@ -151,6 +153,8 @@ using ImageCore
             @test sum(x) == 2a
             x = typeof(a)[]
             @test sum(x) == float(zero(a))
+            x = [a]
+            @test sum(x) == float(a)
         end
 
         a = GreenMagenta(0.1, 0.2)
