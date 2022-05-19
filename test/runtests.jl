@@ -117,6 +117,7 @@ using ImageCore
     @testset "Operations" begin
         MCC{T} = MultiChannelColor{T,2}
         CM{T} = GreenMagenta{T}
+        g = (3, 2)
         for (Ta, Tb) in ((N0f8, N0f8),
                          (Float32, Float32),
                          (N0f8, Float32),
@@ -135,6 +136,7 @@ using ImageCore
                 @test 2a === a*2 === C(2*Ta(0.2), 2*Ta(0.4))
                 @test a/2 === C(Ta(0.2)/2, Ta(0.4)/2)
                 @test a ⊙ b === C(Ta(0.2)*Tb(0.2), Ta(0.4)*Tb(0.1))
+                @test g ⊙ a === a ⊙ g === C(g[1]*comp1(a), g[2]*comp2(a))
                 @test a ⋅ b === float(Ta(0.2)*Tb(0.2)) + Ta(0.4)*Tb(0.1)
 
                 @test a === copy(a)

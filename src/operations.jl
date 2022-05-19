@@ -35,3 +35,6 @@ Base.abs2(c::AbstractMultiChannelColor) = mapreducec(v->v^2, +, zero(acctype(elt
 (-)(a::AbstractMultiChannelColor, b::AbstractMultiChannelColor) = (-)(promote(a, b)...)
 (⊙)(a::AbstractMultiChannelColor, b::AbstractMultiChannelColor) = (⊙)(promote(a, b)...)
 (⋅)(a::AbstractMultiChannelColor, b::AbstractMultiChannelColor) = (⋅)(promote(a, b)...) # not fully supported, but used for error hints
+
+(⊙)(a::C, b::NTuple{N,Number}) where {C<:AbstractMultiChannelColor{<:Real,N}} where N = base_color_type(C)(Tuple(a) .* b)
+(⊙)(a::NTuple{N,Number}, b::C) where {C<:AbstractMultiChannelColor{<:Real,N}} where N = base_color_type(C)(a .* Tuple(b))
