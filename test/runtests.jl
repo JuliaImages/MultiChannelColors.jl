@@ -177,6 +177,8 @@ using ImageCore
         @test a != a
         @test isequal(a, a)
         @test !isequal(a, b)
+        @test zero(a) === GreenMagenta(0.0, 0.0)
+        @test oneunit(a) === GreenMagenta(1.0, 1.0)
     end
 
     @testset "Conversion (other color spaces)" begin
