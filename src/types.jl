@@ -16,6 +16,8 @@ Base.Tuple(c::AbstractMultiChannelColor) = c.channels
 
 Base.zero(::Type{C}) where C <: AbstractMultiChannelColor{T,N} where {T<:Number,N} = C(ntuple(i->zero(T), N))
 
+Base.setindex(c::AbstractMultiChannelColor, val, i::Integer) = typeof(c)(Base.setindex(Tuple(c), val, i))
+
 function Base.show(io::IO, c::AbstractMultiChannelColor)
     print(io, '(')
     chans = Tuple(c)
