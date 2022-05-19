@@ -60,6 +60,9 @@ using ImageCore
         @test Tuple(Base.VERSION >= v"1.7.0" ? @inferred(fT(0.1, 0.2)) : fT(0.1, 0.2)) === (0.1, 0.2)
         @test Tuple(Base.VERSION >= v"1.7.0" ? @inferred(f(0.1, 0.2)) : f(0.1, 0.2)) === (0.1, 0.2)
 
+        img = rand(GreenMagenta{Float32}, 10, 10)
+        @test img isa Array{GreenMagenta{Float32}}
+
         # Overflow behavior
         ctemplate = ColorMixture{N0f8}((RGB(1, 0, 0), RGB(0.5, 0.5, 0)))
         c = ctemplate(0.8, 0.8)
