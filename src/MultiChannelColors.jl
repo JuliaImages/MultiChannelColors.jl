@@ -17,6 +17,7 @@ import ColorVectorSpace.TensorCore: ⊙
 
 export AbstractMultiChannelColor, MultiChannelColor, ColorMixture, GreenMagenta, MagentaGreen
 export fluorophore_rgb, @fluorophore_rgb_str
+export ⋅, ⊙
 
 include("types.jl")
 include("fluorophores.jl")
