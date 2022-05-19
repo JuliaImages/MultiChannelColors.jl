@@ -14,7 +14,13 @@ ColorTypes.comp5(c::AbstractMultiChannelColor) = c.channels[5]
 
 Base.Tuple(c::AbstractMultiChannelColor) = c.channels
 
-Base.zero(::Type{C}) where C <: AbstractMultiChannelColor{T,N} where {T<:Number,N} = C(ntuple(i->zero(T), N))
+Base.zero(::Type{C}) where C <: AbstractMultiChannelColor{T,N} where {T<:Number,N} = C(gamutmin(C))
+Base.oneunit(::Type{C}) where C <: AbstractMultiChannelColor{T,N} where {T<:Number,N} = C(gamutmax(C))
+
+ColorTypes.gamutmin(::Type{C}) where C <: AbstractMultiChannelColor{T,N} where {T<:Number,N} = ntuple(i->zero(T), N)
+ColorTypes.gamutmax(::Type{C}) where C <: AbstractMultiChannelColor{T,N} where {T<:Number,N} = ntuple(i->oneunit(T), N)
+
+Base.setindex(c::AbstractMultiChannelColor, val, i::Integer) = typeof(c)(Base.setindex(Tuple(c), val, i))
 
 function Base.show(io::IO, c::AbstractMultiChannelColor)
     print(io, '(')

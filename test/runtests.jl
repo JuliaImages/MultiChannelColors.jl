@@ -31,6 +31,8 @@ using ImageCore
         c = ColorMixture(channels, (0.5, 0.5))
         @test c.channels[1] == c.channels[2] == 0.5
         @test convert(RGB, c) ≈ 0.5*channels[1] + 0.5*channels[2]
+        c = Base.setindex(c, 0.8, 2)
+        @test Tuple(c) === (0.5, 0.8)
 
         fchannels = float.(channels)
         if Base.VERSION >= v"1.8.0-DEV.363"
@@ -45,6 +47,8 @@ using ImageCore
         @test eltype(base_color_type(c)((0.1N0f8, 0.2N0f16))) === eltype(base_color_type(c)(0.1N0f8, 0.2N0f16)) === N0f16
         @test eltype(MultiChannelColor((0.1N0f8, 0.2N0f16)))  === eltype(MultiChannelColor(0.1N0f8, 0.2N0f16))  === N0f16
         @test eltype(convert(MultiChannelColor{N0f8}, c)) === N0f8
+        c = Base.setindex(c, 0.8, 1)
+        @test Tuple(c) === (0.8f0, 0.2f0)
 
         c = MagentaGreen{Float32}(0.1, 0.2)
         @test eltype(base_color_type(c)((0.1N0f8, 0.2N0f8)))  === eltype(base_color_type(c)(0.1N0f8, 0.2N0f8))  === N0f8
@@ -55,6 +59,9 @@ using ImageCore
         f(x, y) = ColorMixture((RGB(0,1,0), RGB(1,0,0)), x, y)
         @test Tuple(Base.VERSION >= v"1.7.0" ? @inferred(fT(0.1, 0.2)) : fT(0.1, 0.2)) === (0.1, 0.2)
         @test Tuple(Base.VERSION >= v"1.7.0" ? @inferred(f(0.1, 0.2)) : f(0.1, 0.2)) === (0.1, 0.2)
+
+        img = rand(GreenMagenta{Float32}, 10, 10)
+        @test img isa Array{GreenMagenta{Float32}}
 
         # Overflow behavior
         ctemplate = ColorMixture{N0f8}((RGB(1, 0, 0), RGB(0.5, 0.5, 0)))
@@ -173,6 +180,8 @@ using ImageCore
         @test a != a
         @test isequal(a, a)
         @test !isequal(a, b)
+        @test zero(a) === GreenMagenta(0.0, 0.0)
+        @test oneunit(a) === GreenMagenta(1.0, 1.0)
     end
 
     @testset "Conversion (other color spaces)" begin
