@@ -87,7 +87,11 @@ using ImageCore
         @test c2 == c0
 
         f_infer16(i1, i2) = ColorMixture{N0f16}((fluorophore_rgb"EGFP", fluorophore_rgb"tdTomato"), (i1, i2))
-        @test_broken @inferred f_infer16(1, 0)
+        if Base.VERSION >= v"1.10.0-9ded051e9f8"
+            @test_nowarn @inferred f_infer16(1, 0)
+        else
+            @test_broken @inferred f_infer16(1, 0)
+        end
 
         # Inferrability from a template
         ctmpl = ColorMixture(channels)
