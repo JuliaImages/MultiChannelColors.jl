@@ -1,3 +1,12 @@
+module StructArraysExt
+
+@static if isdefined(Base, :get_extension)
+    using StructArrays
+else
+    using ..StructArrays
+end
+using MultiChannelColors: ColorMixture
+
 channelname(N::Int, i::Int) = Symbol("channel" * lpad(string(i), ndigits(N), '0'))
 
 function StructArrays.staticschema(::Type{ColorMixture{T,N,Cs}}) where {T, N, Cs}
@@ -28,4 +37,11 @@ end
 
 function StructArrays.createinstance(::Type{ColorMixture{T,N,Cs}}, args...) where {T, N, Cs}
     return ColorMixture{T,N,Cs}(args)
+end
+
+function __init__()
+    @debug "StructArraysExt loaded"
+    return nothing
+end
+
 end
