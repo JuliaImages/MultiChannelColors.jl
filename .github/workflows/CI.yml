@@ -18,33 +18,41 @@ jobs:
       fail-fast: false
       matrix:
         version:
-          - '1.6'     # 1.6 lacks `@constprop :aggressive` so it's a bit poorly-supported
-          - '1.7'     # therefore make sure we directly test 1.7 as well as more current versions
           - '1'
-          - 'nightly'
         os:
           - ubuntu-latest
+          - windows-latest
+          - macOS-13
         arch:
           - x64
+        include:
+          - os: macOS-latest
+            arch: aarch64
+            version: 1
+          - os: ubuntu-latest
+            arch: x64
+            version: 'min'
     steps:
-      - uses: actions/checkout@v2
-      - uses: julia-actions/setup-julia@v1
+      - uses: actions/checkout@v4
+      - uses: julia-actions/setup-julia@v2
         with:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
-      - uses: julia-actions/cache@v1
+      - uses: julia-actions/cache@v2
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
       - uses: julia-actions/julia-processcoverage@v1
-      - uses: codecov/codecov-action@v2
+      - uses: codecov/codecov-action@v4
         with:
           files: lcov.info
+          token: ${{ secrets.CODECOV_TOKEN }}
+          
   docs:
     name: Documentation
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: julia-actions/setup-julia@v1
+      - uses: actions/checkout@v4
+      - uses: julia-actions/setup-julia@v2
         with:
           version: '1'
       - uses: julia-actions/julia-buildpkg@v1
